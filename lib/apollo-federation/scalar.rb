@@ -18,6 +18,10 @@ module ApolloFederation
       def inaccessible
         add_directive(name: 'inaccessible')
       end
+
+      def authenticated
+        add_directive(name: 'authenticated')
+      end
     end
   end
 end

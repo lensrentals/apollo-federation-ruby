@@ -7,7 +7,7 @@ require 'apollo-federation/federated_document_from_schema_definition.rb'
 
 module ApolloFederation
   module Schema
-    IMPORTED_DIRECTIVES = ['inaccessible', 'tag'].freeze
+    IMPORTED_DIRECTIVES = ['inaccessible', 'tag', 'authenticated'].freeze
 
     def self.included(klass)
       klass.extend(CommonMethods)
