@@ -90,11 +90,17 @@ module ApolloFederation
         directives = []
       end
 
-      directives.each do |directive|
-        node = node.merge_directive(
-          name: directive_name(directive),
-          arguments: build_arguments_node(directive[:arguments]),
-        )
+      grouped_directives = directives.group_by { |d| d[:name] }
+
+      grouped_directives.each do |k, directives|
+        # Directives that have the same name and arguments do not need to be duplicated in the schema
+        uniq_directives = directives.uniq { |d| d[:arguments] }
+        uniq_directives.each do |directive|
+          node.merge_directive(
+            name: directive_name(directive),
+            arguments: build_arguments_node(directive[:arguments]),
+          )
+        end
       end
       node
     end
