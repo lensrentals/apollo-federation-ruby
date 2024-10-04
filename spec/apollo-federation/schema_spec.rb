@@ -154,24 +154,35 @@ RSpec.describe ApolloFederation::Schema do
       )
     end
 
-    it 'returns a schema directive with the given federation version if specified' do
-      qt = query_type
-      schema = Class.new(GraphQL::Schema) do
-        include ApolloFederation::Schema
-        query qt
-        federation version: '2.1'
+    # Versions are all 0.1 above the base used for the directives requirement
+    versions = {
+      '2.1' => '["@inaccessible"]',
+      '2.4' => '["@inaccessible", "@tag"]',
+      '2.6' => '["@inaccessible", "@tag", "@authenticated"]',
+    }
+
+    versions.each do |version, directives|
+      context "given #{version} federated version" do
+        it 'returns a schema with the appropriate `@link` specification and correct array of imported arguments' do
+          qt = query_type
+          schema = Class.new(GraphQL::Schema) do
+            include ApolloFederation::Schema
+            query qt
+            federation version: version
+          end
+
+          expect(schema.federation_sdl).to match_sdl(
+            <<~GRAPHQL,
+              extend schema
+                @link(url: "https://specs.apollo.dev/federation/v#{version}", import: #{directives})
+
+              type Query {
+                test: String!
+              }
+            GRAPHQL
+          )
+        end
       end
-
-      expect(schema.federation_sdl).to match_sdl(
-        <<~GRAPHQL,
-          extend schema
-            @link(url: "https://specs.apollo.dev/federation/v2.1", import: ["@inaccessible", "@tag"])
-
-          type Query {
-            test: String!
-          }
-        GRAPHQL
-      )
     end
   end
 end

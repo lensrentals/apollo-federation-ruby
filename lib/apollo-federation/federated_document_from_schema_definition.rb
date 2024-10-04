@@ -96,7 +96,7 @@ module ApolloFederation
         # Directives that have the same name and arguments do not need to be duplicated in the schema
         uniq_directives = directives.uniq { |d| d[:arguments] }
         uniq_directives.each do |directive|
-          node.merge_directive(
+          node = node.merge_directive(
             name: directive_name(directive),
             arguments: build_arguments_node(directive[:arguments]),
           )
@@ -106,7 +106,7 @@ module ApolloFederation
     end
 
     def directive_name(directive)
-      if schema.federation_2? && !Schema::IMPORTED_DIRECTIVES.include?(directive[:name])
+      if schema.federation_2? && !schema.imported_directives.include?(directive[:name])
         "#{schema.link_namespace}__#{directive[:name]}"
       else
         directive[:name]

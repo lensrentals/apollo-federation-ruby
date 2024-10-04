@@ -302,6 +302,30 @@ class User < BaseObject
 end
 ```
 
+### The `@authenticated` directive (Apollo Federation >= 2.5)
+
+Note: Your Federation spec version MUST be >= 2.5 to utilize `@authenticated`. Prior federation specs do not include `@authenticated` and will be rejected by the Apollo Router if your schema includes that directive.
+
+[Apollo documentation](https://www.apollographql.com/docs/graphos/reference/federation/directives#authenticated)
+
+Call `authenticated` within your class definitions:
+
+```ruby
+class User < BaseObject
+  authenticated
+end
+```
+
+Pass the `authenticated:` option to your field definition:
+
+```ruby
+class User < BaseObject
+  field :id, ID, null: false
+  field :order_ids, [ID], null: false, authenticated: true
+end
+```
+
+
 ### Field set syntax
 
 Field sets can be either strings encoded with the Apollo Field Set [syntax]((https://www.apollographql.com/docs/apollo-server/federation/federation-spec/#scalar-_fieldset)) or arrays, hashes and snake case symbols that follow the graphql-ruby conventions:

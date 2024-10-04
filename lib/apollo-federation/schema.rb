@@ -7,8 +7,6 @@ require 'apollo-federation/federated_document_from_schema_definition.rb'
 
 module ApolloFederation
   module Schema
-    IMPORTED_DIRECTIVES = ['inaccessible', 'tag', 'authenticated'].freeze
-
     def self.included(klass)
       klass.extend(CommonMethods)
     end
@@ -27,6 +25,25 @@ module ApolloFederation
 
       def federation_2?
         Gem::Version.new(federation_version.to_s) >= Gem::Version.new('2.0.0')
+      end
+
+      def imported_directives
+        return [] unless federation_2?
+        # Directives from the apollo specification for specific 2.x versions
+        directives_2 = ['inaccessible']
+        directives_2_3 = ['tag']
+        directives_2_5 = ['authenticated']
+
+        version = Gem::Version.new(federation_version.to_s)
+
+        case
+        when version >= Gem::Version.new('2.5.0')
+          directives_2 + directives_2_3 + directives_2_5
+        when version >= Gem::Version.new('2.3.0')
+          directives_2 + directives_2_3
+        when version >= Gem::Version.new('2.0.0')
+          directives_2
+        end
       end
 
       def federation_sdl(context: nil)
@@ -61,9 +78,10 @@ module ApolloFederation
 
       def federation_preamble
         federation_namespace = ", as: \"#{link_namespace}\"" if link_namespace != DEFAULT_LINK_NAMESPACE
+
         <<~SCHEMA
           extend schema
-            @link(url: "https://specs.apollo.dev/federation/v#{federation_version}"#{federation_namespace}, import: [#{(IMPORTED_DIRECTIVES.map { |directive| "\"@#{directive}\"" }).join(', ')}])
+            @link(url: "https://specs.apollo.dev/federation/v#{federation_version}"#{federation_namespace}, import: [#{(imported_directives.map { |directive| "\"@#{directive}\"" }).join(', ')}])
 
         SCHEMA
       end
